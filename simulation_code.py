@@ -4,7 +4,7 @@ from __future__ import annotations
 """Reproduce all numerical figures for the anisotropic-collapse manuscript.
 
 The script is self-contained and uses only NumPy, SciPy, and Matplotlib.
-It separates four numerical roles:
+It separates five numerical roles:
   1. frozen scalar OU consistency checks;
   2. controlled localized nonlinear and adiabatic consistency tests;
   3. an exact coupled nonnormal rotating-mode Lyapunov test;
@@ -388,7 +388,7 @@ def generate_fig3(out: Path) -> None:
     ax.legend(fontsize=7.0, framealpha=0.95, loc="best")
     style_axes(ax)
 
-    fig.savefig(out / "fig3_controlled_limits_4panel_v2.png", bbox_inches="tight", pad_inches=0.04)
+    fig.savefig(out / "fig3_controlled_limits.png", bbox_inches="tight", pad_inches=0.04)
     plt.close(fig)
 
 
@@ -564,7 +564,7 @@ def generate_fig4(out: Path) -> None:
     ax.legend(fontsize=6.5, framealpha=0.95, loc="lower left")
     style_axes(ax)
 
-    fig.savefig(out / "fig4_nonnormal_rotating_validation_v3.png", bbox_inches="tight", pad_inches=0.04)
+    fig.savefig(out / "fig4_nonnormal_rotating_validation.png", bbox_inches="tight", pad_inches=0.04)
     plt.close(fig)
 
 
@@ -677,7 +677,7 @@ def generate_fig5(out: Path) -> None:
     ax.legend(fontsize=6.7, framealpha=0.95, loc="best")
     style_axes(ax)
 
-    fig.savefig(out / "fig5_finite_history_estimation_v2.png", bbox_inches="tight", pad_inches=0.04)
+    fig.savefig(out / "fig5_finite_history_estimation.png", bbox_inches="tight", pad_inches=0.04)
     plt.close(fig)
 
 
@@ -800,7 +800,7 @@ def generate_fig6(out: Path) -> None:
     ax.legend(fontsize=6.7, framealpha=0.95, ncol=2, loc="upper left")
     style_axes(ax)
 
-    fig.savefig(out / "fig6_fixed_noise_stress_test_v2.png", bbox_inches="tight", pad_inches=0.04)
+    fig.savefig(out / "fig6_fixed_noise_stress_test.png", bbox_inches="tight", pad_inches=0.04)
     plt.close(fig)
 
 
