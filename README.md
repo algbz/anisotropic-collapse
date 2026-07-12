@@ -1,43 +1,24 @@
-# Anisotropic Collapse
+# Fisher Collapse and Directional Concealment Near Stochastic Bifurcations
 
-Reproducible figure-generation code for the manuscript:
-
-> **Fisher Collapse and Directional Concealment Near Bifurcation**  
-> Aldo Alberto Aguilar Bermúdez
-
-The project studies a model-based failure mode in which an observation channel becomes locally insensitive along a dynamically important direction near a bifurcation. The numerical examples separate latent-state fluctuations from observation-map sensitivity and illustrate directional Fisher-information loss, masking by preserved directions, alignment effects, and local sensor-selection diagnostics.
+This repository contains the reproducibility code for the manuscript **“Fisher Collapse and Directional Concealment Near Stochastic Bifurcations.”** It regenerates all six numerical figures and reruns the numerical checks reported in the manuscript. No external datasets are required.
 
 ## Repository contents
 
-```text
-.
-├── generate_figures.py   # self-contained generator for all manuscript figures
-├── README.md
-└── LICENSE               # MIT License
-```
+- `simulation_code.py` — generates Figures 1–6 using the fixed parameters and random seeds reported in the manuscript.
+- `validate_numerics.py` — reruns the convergence, Lyapunov-residual, finite-history, and seed-robustness checks.
+- `requirements.txt` — pinned Python dependencies used for the final manuscript build.
 
-The script does not require external datasets or project-specific helper modules.
+## Environment
 
-## Requirements
+The final results were tested with Python 3.13.5 and the package versions listed in `requirements.txt`.
 
-- Python 3.10 or newer
-- NumPy
-- SciPy
-- Matplotlib
-
-Install the dependencies with:
-
-```bash
-python -m pip install numpy scipy matplotlib
-```
-
-A virtual environment is recommended:
+Create a clean environment:
 
 ```bash
 python -m venv .venv
 ```
 
-Activate it on macOS or Linux:
+Activate it on Linux or macOS:
 
 ```bash
 source .venv/bin/activate
@@ -49,95 +30,44 @@ Activate it on Windows PowerShell:
 .venv\Scripts\Activate.ps1
 ```
 
-Then install the dependencies:
+Install the dependencies:
 
 ```bash
-python -m pip install numpy scipy matplotlib
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 ```
 
-## Reproduce all figures
+## Regenerate all figures
 
-Clone the repository and run:
+From the repository root, run:
 
 ```bash
-git clone https://github.com/algbz/anisotropic-collapse.git
-cd anisotropic-collapse
-python generate_figures.py
+python simulation_code.py figures
 ```
 
-By default, the 13 PNG files are written to `figures/`.
+The script creates the `figures` directory when necessary and writes:
 
-Use a custom output directory:
+- `fig1_critical_mode_phase_diagram.png`
+- `fig2_scalar_geometry.png`
+- `fig3_controlled_limits_4panel_v2.png`
+- `fig4_nonnormal_rotating_validation_v3.png`
+- `fig5_finite_history_estimation_v2.png`
+- `fig6_fixed_noise_stress_test_v2.png`
+
+All numerical parameters and random seeds are defined explicitly in `simulation_code.py`. Repeating the command in the pinned environment reproduces the manuscript figures.
+
+## Run the numerical audit
 
 ```bash
-python generate_figures.py --output-dir results
+python validate_numerics.py
 ```
 
-Generate one figure only:
+A successful run ends with:
 
-```bash
-python generate_figures.py --figure 8
+```text
+All numerical audit assertions passed.
 ```
 
-List the available figures:
+## Data availability
 
-```bash
-python generate_figures.py --list
-```
-
-Full generation can take several minutes. Each figure is produced in a separate Python process to keep peak memory use bounded.
-
-## Generated outputs
-
-| Figure | Output file | Main role |
-|---:|---|---|
-| 1 | `fig1_engineering_schematic.png` | Conceptual sensing and policy schematic |
-| 2 | `fig2_engineering_policy.png` | Simulated sensor-response and switching illustration |
-| 3 | `fig3_fisher_field.png` | Scalar potential, observation map, and Fisher field |
-| 4 | `fig4_hierarchy.png` | Scalar threshold hierarchy |
-| 5 | `fig5_channel.png` | Channel-strength and observed-variance dynamics |
-| 6 | `fig6_scalar_occupation_v2.png` | Low-information occupation in the scalar model |
-| 7 | `fig7_ablation.png` | Matched observation-map ablation |
-| 8 | `fig8_channel_geometry.png` | Anisotropic channel geometry |
-| 9 | `fig9_directional_collapse.png` | Coordinate-specific Fisher-information degradation |
-| 10 | `fig10_alignment.png` | Alignment experiment |
-| 11 | `fig11_anisotropic_occupation_v2.png` | Anisotropic low-information occupation |
-| 12 | `fig12_masking.png` | Directional masking by a preserved channel |
-| 13 | `fig13_diagnostics.png` | Directional, overall, and aggregate diagnostics |
-
-## Reproducibility notes
-
-- All numerical data are generated from the equations implemented in `generate_figures.py`.
-- No external empirical data are used.
-- Stochastic ensemble panels use fixed random seeds and 24 replicates.
-- Comparisons across observation channels use matched latent trajectories and, where applicable, matched observation-noise draws.
-- Analytic, deterministic, schematic, and simulation-based panels are identified in the manuscript captions and in the source-code comments.
-- Model parameters and plotting settings are defined near the top of the script.
-
-The simulations illustrate the behavior of the specified models and parameter choices. They are not presented as universal empirical validation.
-
-## Citation
-
-Until a version of record is available, please cite the manuscript and repository as:
-
-> Aguilar Bermúdez, Aldo Alberto. *Fisher Collapse and Directional Concealment Near Bifurcation*. Manuscript, 2026. Code: `https://github.com/algbz/anisotropic-collapse`.
-
-BibTeX:
-
-```bibtex
-@unpublished{aguilarbermudez2026fisher,
-  author = {Aguilar Berm{\'u}dez, Aldo Alberto},
-  title  = {Fisher Collapse and Directional Concealment Near Bifurcation},
-  year   = {2026},
-  note   = {Manuscript. Code available at https://github.com/algbz/anisotropic-collapse}
-}
-```
-
-## Author
-
-**Aldo Alberto Aguilar Bermúdez**  
-Email: [aldgbz@pm.me](mailto:aldgbz@pm.me)
-
-## License
-
-The code is released under the MIT License. See `LICENSE` for the full terms.
+The numerical data reported in the manuscript are generated by `simulation_code.py`. No external, proprietary, or third-party datasets are used.
