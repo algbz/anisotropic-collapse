@@ -49,12 +49,14 @@ The script creates the `figures` directory when necessary and writes:
 
 - `fig1_critical_mode_phase_diagram.png`
 - `fig2_scalar_geometry.png`
-- `fig3_controlled_limits_4panel_v2.png`
-- `fig4_nonnormal_rotating_validation_v3.png`
-- `fig5_finite_history_estimation_v2.png`
-- `fig6_fixed_noise_stress_test_v2.png`
+- `fig3_controlled_limits.png`
+- `fig4_nonnormal_rotating_validation.png`
+- `fig5_finite_history_estimation.png`
+- `fig6_fixed_noise_stress_test.png`
 
 All numerical parameters and random seeds are defined explicitly in `simulation_code.py`. Repeating the command in the pinned environment reproduces the manuscript figures.
+
+The numerical settings in `simulation_code.py` match Appendix B of the manuscript, including ensemble sizes, integration steps, burn-in and sampling lengths, finite-history batch sizes, and the fixed seed ranges.
 
 ## Run the numerical audit
 
