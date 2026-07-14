@@ -368,7 +368,7 @@ def generate_fig3(out: Path) -> None:
         Line2D([0], [0], color=colors[2.0], lw=1.8, label=r"$\alpha=2$"),
         Line2D([0], [0], color=colors[3.0], lw=1.8, label=r"$\alpha=3$"),
         Line2D([0], [0], color="black", ls=(0, (4, 2)), lw=1.5,
-               label="dashed = local prediction"),
+               label="local prediction"),
     ]
     ax.legend(handles=handles, fontsize=6.5, framealpha=0.95, loc="lower left",
               handlelength=2.6, borderpad=0.4, labelspacing=0.3)
