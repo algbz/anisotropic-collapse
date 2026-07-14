@@ -181,7 +181,7 @@ def generate_fig1(out: Path) -> None:
         ax.set_yscale("log")
         ax.set_xlim(mu.max(), mu.min())
         ax.set_xlabel(r"Distance to bifurcation $\mu$")
-        ax.set_ylabel("Normalized strength or power")
+        ax.set_ylabel("Normalized quantity")
         panel_title(ax, title)
         ax.legend(fontsize=7.4, framealpha=0.95, loc="best")
         style_axes(ax)
