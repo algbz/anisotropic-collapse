@@ -1,22 +1,11 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-"""Reproduce all numerical figures for the anisotropic-collapse manuscript.
-
-The script is self-contained and uses only NumPy, SciPy, and Matplotlib.
-It separates four numerical roles:
-  1. frozen scalar OU consistency checks;
-  2. controlled localized nonlinear and adiabatic consistency tests;
-  3. an exact coupled nonnormal rotating-mode Lyapunov test;
-  4. a finite-history critical-state estimation experiment;
-  5. a fixed-noise nonlinear stress test preserving the original mechanism.
+"""Reproduce all figures for the anisotropic-collapse manuscript.
 
 Usage
 -----
-python simulation_code.py [output_directory]
-
-When no output directory is supplied, figures are written to the current
-directory. All random seeds and numerical parameters are fixed in this file.
+python generate_figures.py [output_directory]
 """
 
 import sys
@@ -88,6 +77,27 @@ def rolling_var(a: np.ndarray, w: int) -> np.ndarray:
     sw2 = cs2[w:] - cs2[:-w]
     m = sw / w
     return sw2 / w - m * m
+
+
+def rolling_ac1(a: np.ndarray, w: int) -> np.ndarray:
+    """Rolling lag-1 autocorrelation over windows of length ``w``."""
+    a = np.asarray(a, dtype=float)
+    if a.ndim != 1 or not 2 <= w < len(a):
+        raise ValueError("rolling_ac1 expects a 1D array and 2 <= w < len(a)")
+    x0, x1 = a[:-1], a[1:]
+    m = w - 1
+
+    def rsum(z: np.ndarray) -> np.ndarray:
+        cs = np.cumsum(np.insert(z, 0, 0.0))
+        return cs[m:] - cs[:-m]
+
+    sx, sy = rsum(x0), rsum(x1)
+    sxx, syy, sxy = rsum(x0 * x0), rsum(x1 * x1), rsum(x0 * x1)
+    mx, my = sx / m, sy / m
+    cov = sxy / m - mx * my
+    vx = sxx / m - mx * mx
+    vy = syy / m - my * my
+    return cov / np.sqrt(np.maximum(vx * vy, 1e-30))
 
 
 # -----------------------------------------------------------------------------
@@ -181,14 +191,14 @@ def generate_fig1(out: Path) -> None:
         ax.set_yscale("log")
         ax.set_xlim(mu.max(), mu.min())
         ax.set_xlabel(r"Distance to bifurcation $\mu$")
-        ax.set_ylabel("Normalized quantity")
+        ax.set_ylabel("Normalized strength or power")
         panel_title(ax, title)
         ax.legend(fontsize=7.4, framealpha=0.95, loc="best")
         style_axes(ax)
 
     ou_panel(axes[1], "pitchfork", [1.0, 1.5, 3.0], "(b) Pitchfork frozen OU")
     ou_panel(axes[2], "saddlenode", [1.0, 1.25, 2.0], "(c) Saddle-node frozen OU")
-    fig.savefig(out / "fig1_critical_mode_phase_diagram.png", bbox_inches="tight", pad_inches=0.04)
+    fig.savefig(out / "Figure1.png", bbox_inches="tight", pad_inches=0.04)
     plt.close(fig)
 
 
@@ -233,7 +243,7 @@ def generate_fig2(out: Path) -> None:
     ax.legend(fontsize=7.5, framealpha=0.95, loc="center right")
     ax.set_ylim(-20, 520)
     style_axes(ax)
-    fig.savefig(out / "fig2_scalar_geometry.png", bbox_inches="tight", pad_inches=0.04)
+    fig.savefig(out / "Figure2.png", bbox_inches="tight", pad_inches=0.04)
     plt.close(fig)
 
 
@@ -368,7 +378,7 @@ def generate_fig3(out: Path) -> None:
         Line2D([0], [0], color=colors[2.0], lw=1.8, label=r"$\alpha=2$"),
         Line2D([0], [0], color=colors[3.0], lw=1.8, label=r"$\alpha=3$"),
         Line2D([0], [0], color="black", ls=(0, (4, 2)), lw=1.5,
-               label="local prediction"),
+               label="dashed = local prediction"),
     ]
     ax.legend(handles=handles, fontsize=6.5, framealpha=0.95, loc="lower left",
               handlelength=2.6, borderpad=0.4, labelspacing=0.3)
@@ -388,7 +398,7 @@ def generate_fig3(out: Path) -> None:
     ax.legend(fontsize=7.0, framealpha=0.95, loc="best")
     style_axes(ax)
 
-    fig.savefig(out / "fig3_controlled_limits_4panel_v2.png", bbox_inches="tight", pad_inches=0.04)
+    fig.savefig(out / "Figure3.png", bbox_inches="tight", pad_inches=0.04)
     plt.close(fig)
 
 
@@ -532,7 +542,7 @@ def generate_fig4(out: Path) -> None:
     ax.set_yscale("log")
     ax.invert_xaxis()
     ax.set_xlabel(r"$\mu$")
-    ax.set_ylabel("Directional Fisher strength")
+    ax.set_ylabel("Critical-direction Fisher strength")
     panel_title(ax, "(d) Two routes to\nFisher collapse")
     ax.legend(fontsize=6.4, framealpha=0.95, loc="lower left")
     style_axes(ax)
@@ -564,7 +574,7 @@ def generate_fig4(out: Path) -> None:
     ax.legend(fontsize=6.5, framealpha=0.95, loc="lower left")
     style_axes(ax)
 
-    fig.savefig(out / "fig4_nonnormal_rotating_validation_v3.png", bbox_inches="tight", pad_inches=0.04)
+    fig.savefig(out / "Figure4.png", bbox_inches="tight", pad_inches=0.04)
     plt.close(fig)
 
 
@@ -677,7 +687,7 @@ def generate_fig5(out: Path) -> None:
     ax.legend(fontsize=6.7, framealpha=0.95, loc="best")
     style_axes(ax)
 
-    fig.savefig(out / "fig5_finite_history_estimation_v2.png", bbox_inches="tight", pad_inches=0.04)
+    fig.savefig(out / "Figure5.png", bbox_inches="tight", pad_inches=0.04)
     plt.close(fig)
 
 
@@ -711,6 +721,7 @@ def generate_fig6(out: Path) -> None:
         "flattening $x^3$": (lambda x: x ** 3, C_PURP, "-"),
     }
     var_runs = {k: [] for k in channels}
+    ac1_runs = {k: [] for k in channels}
     fisher_runs = {"linear": [], "saturating": [], "cubic": []}
     density_paths = []
 
@@ -722,17 +733,16 @@ def generate_fig6(out: Path) -> None:
             eps_rng = np.random.default_rng(9000 + seed)
             for name, (fn, _, _) in channels.items():
                 eps = SE * eps_rng.normal(size=len(x))
-                var_runs[name].append(rolling_var(fn(x) + eps, w))
+                observed = fn(x) + eps
+                var_runs[name].append(rolling_var(observed, w))
+                ac1_runs[name].append(rolling_ac1(observed, w))
             fisher_runs["linear"].append(np.ones_like(x) / SE ** 2)
             fisher_runs["saturating"].append((2 / np.cosh(2 * x) ** 2) ** 2 / SE ** 2)
             fisher_runs["cubic"].append(9 * x ** 4 / SE ** 2)
         density_paths.append(x)
 
-    fig = plt.figure(figsize=(7.15, 4.55), constrained_layout=True)
-    gs = fig.add_gridspec(2, 2, height_ratios=(1.0, 1.12))
-    ax_a = fig.add_subplot(gs[0, 0])
-    ax_b = fig.add_subplot(gs[0, 1])
-    ax_c = fig.add_subplot(gs[1, :])
+    fig, axes = plt.subplots(2, 2, figsize=(7.15, 5.30), constrained_layout=True)
+    ax_a, ax_b, ax_c, ax_d = axes.flat
 
     # (a) Time-resolved ensemble state density across many trajectories.
     ax = ax_a
@@ -748,7 +758,6 @@ def generate_fig6(out: Path) -> None:
         density_s.reshape(-1),
         bins=[time_edges, x_edges],
     )
-    # Normalize each time column to show the conditional state density p(x|t).
     H = H.T
     colsum = H.sum(axis=0, keepdims=True)
     H = np.divide(H, colsum, out=np.zeros_like(H), where=colsum > 0)
@@ -763,7 +772,7 @@ def generate_fig6(out: Path) -> None:
     ax.set_xlabel("Time")
     ax.set_ylabel("State")
     panel_title(ax, "(a) Time-state density\nunder fixed noise")
-    ax.legend(fontsize=6.4, framealpha=0.95, loc='upper right')
+    ax.legend(fontsize=6.3, framealpha=0.95, loc='upper right')
     style_axes(ax)
 
     # (b) Realized local Fisher strengths on the same latent ensembles.
@@ -780,11 +789,11 @@ def generate_fig6(out: Path) -> None:
     ax.set_yscale("log")
     ax.set_xlabel("Time")
     ax.set_ylabel(r"Realized local Fisher strength $\mathcal{I}(x_t)$")
-    panel_title(ax, "(b) State-dependent channel strengths")
-    ax.legend(fontsize=6.7, framealpha=0.95, loc="best")
+    panel_title(ax, "(b) Observation-channel\nFisher strength")
+    ax.legend(fontsize=6.4, framealpha=0.95, loc="best")
     style_axes(ax)
 
-    # (c) Main outcome panel enlarged across the full bottom row.
+    # (c) Conventional variance-based early-warning statistic.
     ax = ax_c
     for name, (_, col, ls) in channels.items():
         data = np.asarray(var_runs[name])
@@ -796,11 +805,26 @@ def generate_fig6(out: Path) -> None:
     ax.set_yscale("log")
     ax.set_xlabel("Time")
     ax.set_ylabel("Absolute rolling variance")
-    panel_title(ax, "(c) Absolute variance reveals channel-specific suppression")
-    ax.legend(fontsize=6.7, framealpha=0.95, ncol=2, loc="upper left")
+    panel_title(ax, "(c) Variance is channel dependent")
+    ax.legend(fontsize=6.2, framealpha=0.95, ncol=2, loc="upper left")
     style_axes(ax)
 
-    fig.savefig(out / "fig6_fixed_noise_stress_test_v2.png", bbox_inches="tight", pad_inches=0.04)
+    # (d) Conventional lag-1 autocorrelation under the same nonstationary drift.
+    ax = ax_d
+    for name, (_, col, ls) in channels.items():
+        data = np.asarray(ac1_runs[name])
+        med = np.median(data, axis=0)
+        lo, hi = np.percentile(data, [10, 90], axis=0)
+        ax.fill_between(tg, lo, hi, color=col, alpha=0.12, linewidth=0)
+        ax.plot(tg, med, color=col, ls=ls, label=name)
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Rolling lag-1 autocorrelation")
+    ax.set_ylim(-0.08, 1.03)
+    panel_title(ax, "(d) Autocorrelation is\nchannel dependent")
+    ax.legend(fontsize=6.3, framealpha=0.95, loc="lower right")
+    style_axes(ax)
+
+    fig.savefig(out / "Figure6.png", bbox_inches="tight", pad_inches=0.04)
     plt.close(fig)
 
 
