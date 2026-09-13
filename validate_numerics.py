@@ -3,9 +3,6 @@ from __future__ import annotations
 
 """Independent numerical audit for the Fisher-collapse figures.
 
-Run from the manuscript directory:
-    python validate_numerics.py
-
 The script reproduces the convergence and ensemble-stability numbers reported
 in the Numerical details appendix. It does not regenerate the manuscript plots.
 """
@@ -167,12 +164,51 @@ def fixed_noise_seed_audit() -> dict[str, tuple[float, float] | float]:
     }
 
 
+def remainder_ratio_audit() -> dict[str, object]:
+    """Check the finite-point and asymptotic stable-remainder regimes in Fig. 4."""
+    out: dict[str, object] = {}
+    endpoint = {}
+    for key, dark in [("mixed", False), ("dark", True)]:
+        vals = []
+        for mu in (0.8, 0.005):
+            v = g.rotating_model(mu, all_dark=dark)
+            pc = float(np.trace(v["Ccrit"]))
+            rem = float(np.linalg.norm(v["Crem"], 2))
+            vals.append(rem / pc)
+        endpoint[key] = (vals[0], vals[1])
+
+    mu_grid = np.geomspace(0.8, 1.0e-4, 500)
+    curves = {}
+    slopes = {}
+    for key, dark in [("mixed", False), ("dark", True)]:
+        ratio = []
+        for mu in mu_grid:
+            v = g.rotating_model(float(mu), all_dark=dark)
+            pc = float(np.trace(v["Ccrit"]))
+            rem = float(np.linalg.norm(v["Crem"], 2))
+            ratio.append(rem / pc)
+        ratio = np.asarray(ratio)
+        curves[key] = ratio
+        # Fit deep in the asymptotic regime; predicted exponents are -0.3 and +1.
+        mask = mu_grid <= 5.0e-4
+        slopes[key] = float(np.polyfit(np.log(mu_grid[mask]), np.log(ratio[mask]), 1)[0])
+
+    mixed_ratio = curves["mixed"]
+    cross_idx = int(np.argmin(np.abs(np.log(mixed_ratio))))
+    out["endpoint"] = endpoint
+    out["slopes"] = slopes
+    out["mixed_crossover_mu"] = float(mu_grid[cross_idx])
+    out["mixed_crossover_ratio"] = float(mixed_ratio[cross_idx])
+    return out
+
+
 def main() -> None:
     dt_x, dt_g = coupled_timestep_audit()
     localized = localized_ensemble_audit()
     residual = lyapunov_audit()
     history_error, history_coverage, history_discretization = finite_history_audit()
     fixed = fixed_noise_seed_audit()
+    remainder = remainder_ratio_audit()
 
     print(f"Coupled timestep change, latent: {100*dt_x:.3f}%")
     print(f"Coupled timestep change, cubic:  {100*dt_g:.3f}%")
@@ -185,6 +221,10 @@ def main() -> None:
     print(f"CR bound coverage by 10-90% batch bands: {100*history_coverage:.1f}%")
     print(f"Finite-history midpoint information error: {100*history_discretization:.4f}%")
     print(f"Fixed-noise slope ranges: {fixed['linear']}, {fixed['bounded']}, {fixed['cubic']}")
+    print(f"Remainder ratio G_mix (mu=0.8,0.005): {remainder['endpoint']['mixed']}")
+    print(f"Remainder ratio G_dark (mu=0.8,0.005): {remainder['endpoint']['dark']}")
+    print(f"Asymptotic remainder slopes (mu<=5e-4): mix={remainder['slopes']['mixed']:.4f}, dark={remainder['slopes']['dark']:.4f}")
+    print(f"G_mix R_E=1 crossover: mu={remainder['mixed_crossover_mu']:.5f}, R_E={remainder['mixed_crossover_ratio']:.4f}")
 
     assert dt_x < 0.006 and dt_g < 0.0061
     assert localized["sigma_max_near"] < 0.05
@@ -196,6 +236,10 @@ def main() -> None:
     assert history_coverage >= 0.90
     assert history_discretization < 0.001
     assert fixed["linear"][0] > 0 and fixed["bounded"][0] > 0 and fixed["cubic"][1] < 0
+    assert remainder["endpoint"]["mixed"][1] > 1.0 and remainder["endpoint"]["dark"][1] < 0.01
+    assert abs(remainder["slopes"]["mixed"] + 0.3) < 0.02
+    assert abs(remainder["slopes"]["dark"] - 1.0) < 0.02
+    assert 0.012 < remainder["mixed_crossover_mu"] < 0.016
     print("All numerical audit assertions passed.")
 
 
